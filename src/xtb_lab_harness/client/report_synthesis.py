@@ -60,5 +60,8 @@ Full JSON evidence:
 
 Output complete markdown report only.
 """
-    response = client.models.generate_content(model=model, contents=prompt)
-    return (response.text or "").strip() or None
+    try:
+        response = client.models.generate_content(model=model, contents=prompt)
+        return (response.text or "").strip() or None
+    except Exception:
+        return None
