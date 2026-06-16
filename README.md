@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# xTB Lab Harness
 
-## Getting Started
+MCP server for xTB-based molecular calculation and LLM multi-agent experiment design.
 
-First, run the development server:
+> An MCP server that exposes xTB computational chemistry operations to LLM agents.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+This repository is **not a web app**. It is a stdio MCP tool server that wraps the [xTB](https://github.com/grimme-lab/xtb) CLI, parses calculation output, and returns structured JSON for downstream MAS clients (Cursor, Claude Desktop, Gemini, custom runners).
+
+## Architecture
+
+```text
+LLM / MAS Runtime (client)
+        ↓ MCP (stdio)
+xTB Lab Harness MCP Server
+        ↓ subprocess
+xTB CLI
+        ↓
+JSON + raw evidence logs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+See [docs/architecture.md](docs/architecture.md) for details.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## MCP Tools
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Tool | Description |
+| --- | --- |
+| `calculate_candidate` | Optimize one `.xyz` and return parsed JSON |
+| `calculate_candidate_batch` | Run multiple candidates |
+| `generate_evidence_table` | Rank results and build a markdown evidence table |
 
-## Learn More
+Tool contracts: [docs/mcp-tools.md](docs/mcp-tools.md)
 
-To learn more about Next.js, take a look at the following resources:
+## Prerequisites
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Python 3.11+
+- [xTB](https://github.com/grimme-lab/xtb) installed and on `PATH` (or set `XTB_BIN`)
+- [uv](https://docs.astral.sh/uv/) recommended
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Setup
 
-## Deploy on Vercel
+```bash
+cp .env.example .env
+uv sync
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Run MCP server (stdio)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+uv run xtb-lab-harness
+```
+
+Or:
+
+```bash
+uv run python -m xtb_lab_harness.server
+```
+
+## Example (Python API, no MCP)
+
+```python
+from xtb_lab_harness.tools.optimize import calculate_candidate
+
+result = calculate_candidate("water", "examples/water.xyz")
+print(result.model_dump_json(indent=2))
+```
+
+## Project scope (MVP)
+
+**In scope**
+
+- xTB CLI wrapper + parser
+- MCP tool registration
+- JSON schemas + evidence logs under `data/runs/`
+- Batch comparison + markdown evidence tables
+
+**Out of scope (for now)**
+
+- Next.js / web UI
+- FastAPI
+- Database / auth
+- Gemini API inside the server (MAS stays on the client)
+
+## Research context
+
+Full system design: [Research Plan.md](Research%20Plan.md)
+
+## License
+
+MIT
