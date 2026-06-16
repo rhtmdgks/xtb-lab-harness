@@ -87,8 +87,23 @@ def run_experiment_pipeline_tool(
     manifest_path: str,
     report_output_path: str | None = None,
     reference_candidate_id: str | None = None,
+    user_command: str | None = None,
+    use_llm: bool = False,
 ) -> dict[str, Any]:
-    """End-to-end: manifest JSON → xTB batch → MAS evaluation → 14-section report."""
+    """End-to-end MAS: LLM plan → xTB → parallel agents → debate → report."""
+    from xtb_lab_harness.config.env import load_project_env
+
+    load_project_env()
+    from xtb_lab_harness.client.gemini_mas import run_mas_pipeline
+
+    if use_llm or user_command:
+        return run_mas_pipeline(
+            manifest_path,
+            user_command=user_command,
+            output_path=report_output_path or "data/reports/latest_report.md",
+            reference_candidate_id=reference_candidate_id,
+            use_llm=use_llm,
+        ).model_dump(mode="json")
     return run_experiment_pipeline(
         manifest_path,
         report_output_path=report_output_path,

@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from xtb_lab_harness.agents.schemas import CandidateEvaluation, ExperimentManifest
+from xtb_lab_harness.agents.schemas import (
+    CandidateDebate,
+    CandidateEvaluation,
+    ExperimentManifest,
+    TaskPlan,
+)
 from xtb_lab_harness.agents.safety import SafetyAgent
 from xtb_lab_harness.agents.scoring import WEIGHTS
 
@@ -12,15 +17,34 @@ def generate_experiment_report(
     manifest: ExperimentManifest,
     evaluations: list[CandidateEvaluation],
     evidence_table_markdown: str,
+    task_plan: TaskPlan | None = None,
+    debates: list[CandidateDebate] | None = None,
 ) -> str:
     """Build the 14-section experiment design report from Research Plan."""
     ranked = [e for e in evaluations if e.rank is not None]
     excluded = [e for e in evaluations if e.excluded]
     top = ranked[0] if ranked else None
+    debate_list = debates or []
 
     sections: list[str] = [
         "# xTB Lab Harness — 실험 설계 보고서",
         "",
+    ]
+    if task_plan:
+        sections.extend(
+            [
+                "## 0. 오케스트레이터 작업 할당",
+                f"- **사용자 명령:** {task_plan.user_command}",
+                f"- **판단 근거:** {task_plan.orchestrator_reasoning}",
+                f"- **할당 에이전트:** {', '.join(task_plan.assigned_agents)}",
+                f"- **토론 라운드:** {task_plan.debate_rounds}",
+                f"- **집중 포인트:** {', '.join(task_plan.focus_points) or '—'}",
+                "",
+            ]
+        )
+
+    sections.extend(
+        [
         "## 1. 실험 목적",
         experiment_objective,
         "",
@@ -36,8 +60,11 @@ def generate_experiment_report(
         "## 5. 후보 물질별 xTB 계산 결과",
         _xtb_results_section(evaluations),
         "",
-        "## 6. 전문 에이전트별 검토 결과",
+        "## 6. 전문 에이전트별 검토 결과 (병렬 수행)",
         _agent_reviews_section(evaluations),
+        "",
+        "## 6.5 에이전트 토론 (Harness Debate)",
+        _debate_section(debate_list),
         "",
         "## 7. 최종 후보 물질 랭킹",
         _ranking_section(ranked),
@@ -71,7 +98,26 @@ def generate_experiment_report(
         "",
         f"_{SafetyAgent.disclaimer}_",
     ]
+    )
     return "\n".join(sections)
+
+
+def _debate_section(debates: list[CandidateDebate]) -> str:
+    if not debates:
+        return "_토론 미실행 (xTB 성공 후보 없음)._"
+    parts: list[str] = []
+    for debate in debates:
+        parts.append(f"### {debate.candidate_id}")
+        parts.append(f"- **합의:** {debate.consensus_summary}")
+        parts.append(f"- **수정 권고:** {debate.revised_recommendation} (score adj {debate.score_adjustment:+.2f})")
+        for rnd in debate.rounds:
+            parts.append(f"#### Round {rnd.round_number}")
+            for msg in rnd.messages:
+                target = f" → @{msg.responds_to}" if msg.responds_to else ""
+                parts.append(f"- **{msg.agent_name}** [{msg.stance}]{target}: {msg.message}")
+            parts.append(f"- _라운드 요약:_ {rnd.round_synthesis}")
+        parts.append("")
+    return "\n".join(parts)
 
 
 def _candidate_list(manifest: ExperimentManifest) -> str:
