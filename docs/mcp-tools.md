@@ -1,39 +1,72 @@
 # MCP Tools
 
-## `calculate_candidate`
+## Calculation tools
+
+### `calculate_candidate`
 
 Run xTB geometry optimization and parse properties for one `.xyz` file.
 
-| Argument | Type | Required | Description |
+| Argument | Type | Default | Description |
 | --- | --- | --- | --- |
-| `candidate_id` | string | yes | Label for logs and JSON output |
-| `xyz_path` | string | yes | Absolute or repo-relative path to input `.xyz` |
-| `gfn` | int | no | GFN level (default `2`) |
-| `charge` | int | no | Molecular charge (`--chrg`) |
-| `uhf` | int | no | UHF (`--uhf`) |
+| `candidate_id` | string | required | Label for logs and JSON |
+| `xyz_path` | string | required | Path to input `.xyz` |
+| `gfn` | int | `2` | GFN level |
+| `charge` | int | null | `--chrg` |
+| `uhf` | int | null | `--uhf` |
 
-## `calculate_candidate_batch`
-
-Same as above for multiple candidates.
+### `calculate_candidate_batch`
 
 ```json
 [
-  {"candidate_id": "water", "xyz_path": "examples/water.xyz"},
-  {"candidate_id": "ethanol", "xyz_path": "examples/ethanol.xyz", "charge": 0}
+  {"candidate_id": "water", "xyz_path": "examples/water.xyz", "gfn": 2, "charge": 0}
 ]
 ```
 
-## `generate_evidence_table`
+### `generate_evidence_table`
 
-Rank successful candidates by total energy and emit a markdown table.
+| Argument | Description |
+| --- | --- |
+| `results` | `CandidateResult` dicts |
+| `reference_candidate_id` | ΔE reference |
+| `save_report_path` | Optional markdown path |
 
-| Argument | Type | Required | Description |
-| --- | --- | --- | --- |
-| `results` | array | yes | List of `CandidateResult` dicts from prior tool calls |
-| `reference_candidate_id` | string | no | Energy reference for ΔE column |
-| `save_report_path` | string | no | Write markdown to `data/reports/...` |
+## MAS tools
 
-## Cursor / Claude Desktop config (stdio)
+### `evaluate_candidates`
+
+Run specialist agents on existing xTB JSON (no re-calculation).
+
+| Argument | Description |
+| --- | --- |
+| `experiment_objective` | Natural language objective |
+| `candidate_specs` | Manifest candidate entries |
+| `xtb_results` | Output from `calculate_candidate_batch` |
+
+Returns scored `CandidateEvaluation` list with agent reviews.
+
+### `run_experiment_pipeline`
+
+End-to-end from manifest JSON:
+
+```json
+{
+  "manifest_path": "examples/candidates.json",
+  "report_output_path": "data/reports/latest_report.md",
+  "reference_candidate_id": "water"
+}
+```
+
+### `generate_experiment_report`
+
+Build 14-section report when you already have evaluations.
+
+## CLI equivalent
+
+```bash
+uv run xtb-lab-run -m examples/candidates.json -o data/reports/latest_report.md --json
+```
+
+## Cursor / Claude Desktop (stdio)
 
 ```json
 {
@@ -51,16 +84,5 @@ Rank successful candidates by total energy and emit a markdown table.
       }
     }
   }
-}
-```
-
-Alternative without `uv`:
-
-```json
-{
-  "command": "python",
-  "args": ["-m", "xtb_lab_harness.server"],
-  "cwd": "/absolute/path/to/xtb-lab-harness",
-  "env": { "PYTHONPATH": "src" }
 }
 ```

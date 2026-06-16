@@ -1,0 +1,50 @@
+{
+  "experiment_objective": "극성이 다른 소분자 용매 후보의 상호작용 차이를 비교하여, 실험실에서 관찰 가능한 극성/비극성 효과 차이를 검증한다.",
+  "xtb_settings": {
+    "gfn": 2
+  },
+  "candidates": [
+    {
+      "candidate_id": "water",
+      "xyz_path": "examples/water.xyz",
+      "charge": 0,
+      "notes": "강극성 용매, 수소결합 기준 대조"
+    },
+    {
+      "candidate_id": "ethanol",
+      "xyz_path": "examples/ethanol.xyz",
+      "charge": 0,
+      "notes": "극성 protic 용매"
+    },
+    {
+      "candidate_id": "methanol",
+      "xyz_path": "examples/methanol.xyz",
+      "charge": 0,
+      "notes": "극성 protic, 소형 용매"
+    },
+    {
+      "candidate_id": "acetone",
+      "xyz_path": "examples/acetone.xyz",
+      "charge": 0,
+      "notes": "극성 aprotic 용매"
+    },
+    {
+      "candidate_id": "ammonia",
+      "xyz_path": "examples/ammonia.xyz",
+      "charge": 0,
+      "notes": "극성, 염기성 경향"
+    },
+    {
+      "candidate_id": "methane",
+      "xyz_path": "examples/methane.xyz",
+      "charge": 0,
+      "notes": "비극성 기준 대조"
+    },
+    {
+      "candidate_id": "urea",
+      "xyz_path": "examples/urea.xyz",
+      "charge": 0,
+      "notes": "극성, 수소결합 donor/acceptor"
+    }
+  ]
+}

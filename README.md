@@ -4,85 +4,108 @@ MCP server for xTB-based molecular calculation and LLM multi-agent experiment de
 
 > An MCP server that exposes xTB computational chemistry operations to LLM agents.
 
-This repository is **not a web app**. It is a stdio MCP tool server that wraps the [xTB](https://github.com/grimme-lab/xtb) CLI, parses calculation output, and returns structured JSON for downstream MAS clients (Cursor, Claude Desktop, Gemini, custom runners).
-
-## Architecture
+## What this is
 
 ```text
 LLM / MAS Runtime (client)
-        ↓ MCP (stdio)
+        ↓ MCP stdio
 xTB Lab Harness MCP Server
         ↓ subprocess
-xTB CLI
-        ↓
-JSON + raw evidence logs
+xTB CLI → JSON + evidence logs
 ```
 
-See [docs/architecture.md](docs/architecture.md) for details.
+The server also includes a **rule-based MAS layer** (specialist agents, scoring, 14-section report) runnable via CLI without any LLM.
+
+## Quick start
+
+```bash
+cp .env.example .env
+uv sync
+
+# Full pipeline from manifest (xTB required on PATH)
+uv run xtb-lab-run -m examples/candidates.json -o data/reports/latest_report.md
+
+# MCP stdio server
+uv run xtb-lab-harness
+```
 
 ## MCP Tools
 
 | Tool | Description |
 | --- | --- |
-| `calculate_candidate` | Optimize one `.xyz` and return parsed JSON |
-| `calculate_candidate_batch` | Run multiple candidates |
-| `generate_evidence_table` | Rank results and build a markdown evidence table |
+| `calculate_candidate` | One `.xyz` → xTB `--opt` → JSON |
+| `calculate_candidate_batch` | Batch xTB calculations |
+| `generate_evidence_table` | Rank by energy + markdown table |
+| `evaluate_candidates` | MAS agent reviews on xTB JSON |
+| `run_experiment_pipeline` | Manifest → xTB → MAS → full report |
+| `generate_experiment_report` | Build 14-section report from evaluations |
 
-Tool contracts: [docs/mcp-tools.md](docs/mcp-tools.md)
+Details: [docs/mcp-tools.md](docs/mcp-tools.md)
+
+## MAS Agents
+
+| Agent | Role |
+| --- | --- |
+| Orchestrator | Pipeline coordination |
+| Hypothesis | Objective → testable hypothesis |
+| Candidate Material | `.xyz` screening + suitability |
+| Electrostatic | Charges + dipole interpretation |
+| vdW / Dispersion | Non-covalent tendency (not high-precision) |
+| Structural Stability | Optimization + energy |
+| Safety | 1st-pass safety filter (not SDS) |
+| Variable Control | IV/DV/CV draft |
+| Critic | Evidence + overclaim check |
+
+Scoring weights match [Research Plan.md](Research%20Plan.md) section 13.
+
+## Examples
+
+- `examples/candidates.json` — 7 molecules, polar/nonpolar solvent comparison
+- `examples/*.xyz` — water, ethanol, methanol, acetone, ammonia, methane, urea
+
+## Optional Gemini client
+
+MAS narrative enrichment (sections 10–14) on the **client** side:
+
+```bash
+uv sync --extra llm
+export GEMINI_API_KEY=...
+uv run xtb-lab-run -m examples/candidates.json --gemini
+```
 
 ## Prerequisites
 
 - Python 3.11+
-- [xTB](https://github.com/grimme-lab/xtb) installed and on `PATH` (or set `XTB_BIN`)
+- [xTB](https://github.com/grimme-lab/xtb) on `PATH` (or `XTB_BIN`)
 - [uv](https://docs.astral.sh/uv/) recommended
 
-## Setup
+## Project layout
 
-```bash
-cp .env.example .env
-uv sync
+```text
+src/xtb_lab_harness/
+  server.py          MCP entrypoint
+  cli.py             xtb-lab-run pipeline CLI
+  xtb/               runner, parser, schemas
+  tools/             xTB + evaluate + report tools
+  agents/            MAS specialists + orchestrator
+  reports/           evidence + experiment report
+  client/            optional Gemini enrichment
+examples/            xyz + candidates.json manifest
+data/runs/           xTB logs (gitignored contents)
+data/reports/        generated reports
+docs/
 ```
 
-## Run MCP server (stdio)
-
-```bash
-uv run xtb-lab-harness
-```
-
-Or:
-
-```bash
-uv run python -m xtb_lab_harness.server
-```
-
-## Example (Python API, no MCP)
-
-```python
-from xtb_lab_harness.tools.optimize import calculate_candidate
-
-result = calculate_candidate("water", "examples/water.xyz")
-print(result.model_dump_json(indent=2))
-```
-
-## Project scope (MVP)
-
-**In scope**
-
-- xTB CLI wrapper + parser
-- MCP tool registration
-- JSON schemas + evidence logs under `data/runs/`
-- Batch comparison + markdown evidence tables
-
-**Out of scope (for now)**
+## Out of scope (MVP)
 
 - Next.js / web UI
-- FastAPI
-- Database / auth
-- Gemini API inside the server (MAS stays on the client)
+- FastAPI / DB / auth
+- Gemini API inside MCP server (client-only)
+- SMILES → 3D conversion
 
 ## Research context
 
-Full system design: [Research Plan.md](Research%20Plan.md)
+[Research Plan.md](Research%20Plan.md)
 
 ## License
 

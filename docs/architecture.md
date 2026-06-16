@@ -1,45 +1,65 @@
 # Architecture
 
 ```text
-[LLM / MAS Runtime]          MCP client (Cursor, Claude Desktop, Gemini, custom)
+[LLM / MAS Runtime — MCP CLIENT]
+  Gemini / Cursor / Claude / custom runner
+  Optional: client/gemini_mas.py for narrative enrichment
         |
         |  stdio MCP
         v
-[xTB Lab Harness MCP Server]
-  - calculate_candidate
-  - calculate_candidate_batch
-  - generate_evidence_table
+[xTB Lab Harness MCP SERVER]
+  calculate_candidate
+  calculate_candidate_batch
+  generate_evidence_table
+  evaluate_candidates
+  run_experiment_pipeline
+  generate_experiment_report
+        |
+        +--> [agents/orchestrator.py]  rule-based MAS (also via xtb-lab-run CLI)
         |
         |  subprocess
         v
-[xTB CLI]
-  - geometry optimization (--opt)
-  - GFN-x (--gfn 2)
+[xTB CLI]  --gfn 2 --opt
         |
         v
 [data/runs/<candidate_id>/]
-  - stdout.log / stderr.log
-  - xtbopt.xyz
-  - charges
 ```
+
+## Layers
+
+| Layer | Location | Responsibility |
+| --- | --- | --- |
+| MCP transport | `server.py` | Tool registration, stdio |
+| xTB execution | `xtb/runner.py` | subprocess, logs |
+| Parsing | `xtb/parser.py` | energy, dipole, charges |
+| MAS agents | `agents/*.py` | specialist reviews |
+| Scoring | `agents/scoring.py` | weighted final score |
+| Reports | `reports/experiment.py` | 14-section markdown |
+| Client LLM | `client/gemini_mas.py` | optional narrative (not in server) |
 
 ## Design principles
 
-1. **MCP server = pure calculation tool.** No Gemini API, no web UI, no DB.
-2. **MAS lives on the client.** Orchestrator prompts and agent debate run outside this repo.
-3. **Evidence preservation.** Every tool returns `raw_evidence` paths for auditability.
-4. **MVP input = pre-built `.xyz`.** No SMILES→3D conversion in scope.
+1. MCP server = calculation + rule-based evaluation tools.
+2. LLM orchestration stays on the client unless using optional Gemini enrichment script.
+3. Every result includes `raw_evidence` paths under `data/runs/`.
+4. MVP input = pre-built `.xyz` only.
 
-## Package layout
+## Manifest format
 
-| Path | Role |
-| --- | --- |
-| `server.py` | MCP entrypoint (stdio) |
-| `xtb/runner.py` | subprocess wrapper |
-| `xtb/parser.py` | stdout / charges parsing |
-| `xtb/schemas.py` | Pydantic JSON contracts |
-| `tools/optimize.py` | single-candidate pipeline |
-| `tools/analyze.py` | batch pipeline |
-| `tools/compare.py` | evidence table + ranking |
-| `agents/prompts.py` | optional MAS prompt snippets for clients |
-| `reports/markdown.py` | persist markdown tables |
+```json
+{
+  "experiment_objective": "...",
+  "xtb_settings": {"gfn": 2},
+  "candidates": [
+    {
+      "candidate_id": "water",
+      "xyz_path": "examples/water.xyz",
+      "charge": 0,
+      "notes": "optional",
+      "safety_flags": []
+    }
+  ]
+}
+```
+
+See `examples/candidates.json`.

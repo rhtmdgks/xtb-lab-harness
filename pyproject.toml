@@ -1,7 +1,7 @@
 [project]
 name = "xtb-lab-harness"
-version = "0.1.0"
-description = "MCP server that exposes xTB computational chemistry operations to LLM agents."
+version = "0.2.0"
+description = "MCP server for xTB-based molecular calculation and LLM multi-agent experiment design."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -16,9 +16,13 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.9",
 ]
+llm = [
+    "google-genai>=1.0",
+]
 
 [project.scripts]
 xtb-lab-harness = "xtb_lab_harness.server:main"
+xtb-lab-run = "xtb_lab_harness.cli:main"
 
 [build-system]
 requires = ["hatchling"]
