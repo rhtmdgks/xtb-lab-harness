@@ -21,6 +21,12 @@ from xtb_lab_harness.agents.schemas import (
 from xtb_lab_harness.agents.scoring import compute_final_score, score_from_reviews
 from xtb_lab_harness.client.llm_orchestrator import plan_from_user_command
 from xtb_lab_harness.client.report_synthesis import synthesize_orchestrator_report
+
+
+def _llm_enabled() -> bool:
+    import os
+
+    return bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
 from xtb_lab_harness.reports.experiment import generate_experiment_report
 from xtb_lab_harness.tools.analyze import calculate_candidate_batch
 from xtb_lab_harness.tools.compare import generate_evidence_table
@@ -49,8 +55,8 @@ class Orchestrator:
         objective = manifest.experiment_objective
         hypothesis = generate_hypothesis(objective)
 
-        if use_llm:
-            task_plan = plan_from_user_command(command, manifest, use_llm=True)
+        if user_command or use_llm:
+            task_plan = plan_from_user_command(command, manifest, use_llm=_llm_enabled())
             objective = task_plan.experiment_objective
             hypothesis = task_plan.hypothesis
             manifest = manifest.model_copy(update={"experiment_objective": objective})
@@ -94,7 +100,7 @@ class Orchestrator:
                     result,
                     experiment_objective=objective,
                     rounds=debate_rounds,
-                    use_llm=use_llm,
+                    use_llm=_llm_enabled(),
                 )
                 all_debates.append(debate)
 
@@ -184,7 +190,7 @@ class Orchestrator:
 
         orchestrator_synthesis: str | None = None
         report_md = base_report
-        if use_llm:
+        if _llm_enabled():
             orchestrator_synthesis = synthesize_orchestrator_report(
                 user_command=command,
                 task_plan=task_plan,
@@ -249,7 +255,7 @@ class Orchestrator:
                     result,
                     experiment_objective=manifest.experiment_objective,
                     rounds=debate_rounds,
-                    use_llm=use_llm,
+                    use_llm=_llm_enabled(),
                 )
             dimensions = score_from_reviews(reviews)
             evaluation = CandidateEvaluation(

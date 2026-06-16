@@ -1,10 +1,20 @@
 from __future__ import annotations
 
 from xtb_lab_harness.agents.schemas import AgentReview, CandidateSpec
+from xtb_lab_harness.xtb.schemas import CandidateResult
 
 
 class VariableControlAgent:
     name = "Variable Control Agent"
+
+    def review(
+        self,
+        candidate: CandidateSpec,
+        result: CandidateResult | None = None,
+        *,
+        experiment_objective: str,
+    ) -> AgentReview:
+        return self.review_for_experiment(candidate, experiment_objective=experiment_objective)
 
     def review_for_experiment(
         self,

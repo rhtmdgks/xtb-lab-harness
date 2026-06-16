@@ -27,7 +27,7 @@ def run_mas_pipeline(
     return Orchestrator().run(
         manifest,
         user_command=command,
-        use_llm=use_llm and _gemini_available(),
+        use_llm=use_llm,
         report_output_path=output_path,
         reference_candidate_id=reference_candidate_id,
     )
