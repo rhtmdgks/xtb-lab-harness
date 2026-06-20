@@ -36,23 +36,32 @@ class ElectrostaticAgent(SpecialistAgent):
         ]
 
         score = 0.3
-        if dipole >= 1.0:
-            score += 0.25
-        if dipole >= 2.5:
-            score += 0.15
-        if spread >= 0.8:
+        if spread >= 0.5:
             score += 0.2
+        if spread >= 0.8:
+            score += 0.1
         if spread >= 1.2:
             score += 0.1
+        if spread >= 0.5 and dipole >= 1.0:
+            score += 0.15
+        if spread >= 0.5 and dipole >= 2.5:
+            score += 0.15
 
-        polarity_note = "극성 분자" if dipole >= 1.5 else "약극성~비극성 경향"
+        if spread < 0.4:
+            polarity_note = "약극성~비극성 경향 (부분전하 분리 작음)"
+        elif dipole >= 1.5:
+            polarity_note = "극성 분자"
+        else:
+            polarity_note = "중간 극성"
         summary = (
             f"{polarity_note}로 분류됨. xTB 부분전하·쌍극자 지표를 바탕으로 "
             "정전기적 상호작용 가능성을 정성 평가함."
         )
 
         concerns: list[str] = []
-        if dipole < 0.5:
+        if spread < 0.4:
+            concerns.append("부분전하 분리가 작아 극성 기반 효과 관찰은 제한적일 수 있음.")
+        elif dipole < 0.5:
             concerns.append("쌍극자 모멘트가 매우 작아 극성 기반 효과 관찰은 제한적일 수 있음.")
 
         return AgentReview(

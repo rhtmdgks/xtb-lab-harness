@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from xtb_lab_harness.agents.orchestrator import load_manifest
 from xtb_lab_harness.agents.schemas import CandidateEvaluation, ExperimentManifest
 from xtb_lab_harness.reports.experiment import generate_experiment_report
 from xtb_lab_harness.tools.compare import generate_evidence_table

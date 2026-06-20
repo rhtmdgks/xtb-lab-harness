@@ -58,7 +58,7 @@ End-to-end from manifest JSON:
 
 ### `generate_experiment_report`
 
-Build 14-section report when you already have evaluations.
+Build standardized experiment report (`report-harness-v1.2`, 한글 우선 표 헤더). See `docs/report-format.md` for the single-source / no-duplication spec.
 
 ## CLI equivalent
 

@@ -13,7 +13,7 @@ MCP tool server for xTB computational chemistry. Not a web app.
 src/xtb_lab_harness/   Python package
 examples/              Sample .xyz inputs
 data/runs/             Per-candidate xTB run logs (gitignored contents)
-docs/                  Architecture and tool contracts
+docs/                  Architecture, tool contracts, report-format.md
 ```
 
 ## Conventions

@@ -24,6 +24,7 @@ llm = [
 [project.scripts]
 xtb-lab-harness = "xtb_lab_harness.server:main"
 xtb-lab-run = "xtb_lab_harness.cli:main"
+xtb-lab-check-gemini = "xtb_lab_harness.client.gemini_health:main"
 
 [build-system]
 requires = ["hatchling"]

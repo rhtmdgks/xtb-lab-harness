@@ -17,7 +17,6 @@ STRUCTURAL = "Structural Stability Agent"
 SAFETY = "Safety Reasoning Agent"
 VARIABLE_CONTROL = "Variable Control Agent"
 CRITIC = "Critic Agent"
-CRITIC = "Critic Agent"
 
 ALL_SPECIALIST_AGENTS = [
     CANDIDATE_MATERIAL,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from xtb_lab_harness.reports.labels import calculation_status_ko, geometry_optimized_ko
 from xtb_lab_harness.xtb.schemas import (
     CalculationStatus,
     CandidateResult,
@@ -89,16 +90,16 @@ def _render_markdown(
     reference_candidate_id: str | None,
 ) -> str:
     header = (
-        "| Rank | Candidate | Status | E (Eh) | ΔE (kcal/mol) | μ (D) | q+ max | q- min | Opt |"
+        "| 순위 | 후보 ID | 계산 상태 | E (Eh) | ΔE (kcal/mol) | μ (D) | q⁺ max | q⁻ min | 최적화 |"
     )
     separator = "| ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | :---: |"
 
     lines = [
-        "# xTB Candidate Evidence Table",
+        "# xTB 후보 증거 표",
         "",
     ]
     if reference_candidate_id:
-        lines.append(f"Reference candidate: `{reference_candidate_id}`")
+        lines.append(f"기준 후보: `{reference_candidate_id}`")
         lines.append("")
 
     lines.extend([header, separator])
@@ -114,10 +115,10 @@ def _render_markdown(
         dipole = f"{row.dipole_moment_debye:.2f}" if row.dipole_moment_debye is not None else "—"
         q_pos = f"{row.max_positive_charge:.3f}" if row.max_positive_charge is not None else "—"
         q_neg = f"{row.max_negative_charge:.3f}" if row.max_negative_charge is not None else "—"
-        opt = "yes" if row.geometry_optimized else "no"
+        opt = geometry_optimized_ko(row.geometry_optimized)
 
         lines.append(
-            f"| {rank} | {row.candidate_id} | {row.calculation_status.value} | "
+            f"| {rank} | {row.candidate_id} | {calculation_status_ko(row.calculation_status)} | "
             f"{energy} | {delta} | {dipole} | {q_pos} | {q_neg} | {opt} |"
         )
 

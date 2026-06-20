@@ -5,7 +5,8 @@ import json
 import sys
 from pathlib import Path
 
-from xtb_lab_harness.client.gemini_mas import run_mas_pipeline, run_with_optional_gemini
+from xtb_lab_harness.client.gemini_health import check_gemini, format_health_report
+from xtb_lab_harness.client.gemini_mas import run_mas_pipeline
 from xtb_lab_harness.config.env import load_project_env
 
 
@@ -14,9 +15,13 @@ def build_parser() -> argparse.ArgumentParser:
         description="Run xTB Lab Harness MAS pipeline (LLM plan → parallel agents → debate → report)",
     )
     parser.add_argument(
+        "--check-gemini",
+        action="store_true",
+        help="Verify GEMINI_API_KEY / GOOGLE_API_KEY and test a minimal API call",
+    )
+    parser.add_argument(
         "--manifest",
         "-m",
-        required=True,
         help="Path to experiment manifest JSON",
     )
     parser.add_argument(
@@ -52,7 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--json",
         action="store_true",
-        help="Print ExperimentRunResult JSON to stdout",
+        help="Print JSON to stdout (ExperimentRunResult or Gemini health result)",
     )
     return parser
 
@@ -60,6 +65,18 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     load_project_env()
     args = build_parser().parse_args(argv)
+
+    if args.check_gemini:
+        result = check_gemini(model=args.gemini_model)
+        print(format_health_report(result))
+        if args.json:
+            print(json.dumps(result.__dict__, indent=2, ensure_ascii=False))
+        return 0 if result.status == "ok" else 1
+
+    if not args.manifest:
+        print("Error: --manifest / -m is required (unless using --check-gemini).", file=sys.stderr)
+        return 2
+
     manifest_path = Path(args.manifest).expanduser().resolve()
     if not manifest_path.exists():
         print(f"Manifest not found: {manifest_path}", file=sys.stderr)
@@ -96,7 +113,10 @@ def main(argv: list[str] | None = None) -> int:
         if result.task_plan:
             print(f"Assigned agents: {', '.join(result.task_plan.assigned_agents)}")
         print(f"Debates: {len(result.debates)}")
-        ranked = [e for e in result.evaluations if e.rank is not None]
+        ranked = sorted(
+            [e for e in result.evaluations if e.rank is not None],
+            key=lambda e: e.rank or 999,
+        )
         if ranked:
             print(f"Top candidate: {ranked[0].candidate_id} (score={ranked[0].final_score:.3f})")
         else:

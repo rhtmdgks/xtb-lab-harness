@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -13,7 +14,6 @@ from xtb_lab_harness.agents.registry import ALL_SPECIALIST_AGENTS, CRITIC
 from xtb_lab_harness.agents.schemas import (
     CandidateDebate,
     CandidateEvaluation,
-    CandidateSpec,
     ExperimentManifest,
     ExperimentRunResult,
     TaskPlan,
@@ -21,16 +21,15 @@ from xtb_lab_harness.agents.schemas import (
 from xtb_lab_harness.agents.scoring import compute_final_score, score_from_reviews
 from xtb_lab_harness.client.llm_orchestrator import plan_from_user_command
 from xtb_lab_harness.client.report_synthesis import synthesize_orchestrator_report
-
-
-def _llm_enabled() -> bool:
-    import os
-
-    return bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
+from xtb_lab_harness.config.paths import resolve_xyz_path
 from xtb_lab_harness.reports.experiment import generate_experiment_report
 from xtb_lab_harness.tools.analyze import calculate_candidate_batch
 from xtb_lab_harness.tools.compare import generate_evidence_table
 from xtb_lab_harness.xtb.schemas import CalculationStatus, CandidateResult
+
+
+def _llm_enabled() -> bool:
+    return bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
 
 
 class Orchestrator:
@@ -114,15 +113,6 @@ class Orchestrator:
                 debate=debate,
             )
 
-            if debate:
-                evaluation.final_score = max(
-                    0.0,
-                    min(1.0, evaluation.final_score + debate.score_adjustment),
-                )
-                if debate.revised_recommendation == "exclude":
-                    evaluation.excluded = True
-                    evaluation.exclusion_reason = f"토론 합의 제외: {debate.consensus_summary}"
-
             critic_review = self._critic.review_evaluation(evaluation)
             evaluation.agent_reviews.append(critic_review)
             evaluation.dimension_scores = self._critic.adjust_dimension_scores(
@@ -135,6 +125,9 @@ class Orchestrator:
                     0.0,
                     min(1.0, evaluation.final_score + debate.score_adjustment),
                 )
+                if debate.revised_recommendation == "exclude":
+                    evaluation.excluded = True
+                    evaluation.exclusion_reason = f"토론 합의 제외: {debate.consensus_summary}"
 
             if any(
                 r.recommendation == "exclude"
@@ -317,5 +310,13 @@ def _write_run_artifacts(
 
 
 def load_manifest(path: str | Path) -> ExperimentManifest:
-    data = json.loads(Path(path).read_text(encoding="utf-8"))
-    return ExperimentManifest.model_validate(data)
+    manifest_path = Path(path).expanduser().resolve()
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = ExperimentManifest.model_validate(data)
+    resolved_candidates = [
+        candidate.model_copy(
+            update={"xyz_path": resolve_xyz_path(candidate.xyz_path, manifest_path)},
+        )
+        for candidate in manifest.candidates
+    ]
+    return manifest.model_copy(update={"candidates": resolved_candidates})

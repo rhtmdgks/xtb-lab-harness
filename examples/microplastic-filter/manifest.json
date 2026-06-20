@@ -1,0 +1,50 @@
+{
+  "experiment_objective": "풍화 미세플라스틱(음이온/극성 표면 proxy)을 제거하기 위한 양전하 필터 활성층 조합을 xTB 분자 수준 상호작용 경향으로 비교·선별한다. 실제 여과 효율이 아닌 분자 proxy 간 정전기적 보완성과 구조 안정성을 평가한다.",
+  "xtb_settings": {
+    "gfn": 2
+  },
+  "candidates": [
+    {
+      "candidate_id": "combo_cell_chitosan",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_glucosamine_H.xyz",
+      "charge": 1,
+      "notes": "나노셀룰로오스/셀룰로오스 스캐폴드 + 키토산(글루코사민) 코팅. 양전하 아민기 보유."
+    },
+    {
+      "candidate_id": "combo_cell_pei",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_pei_H.xyz",
+      "charge": 2,
+      "notes": "셀룰로오스 스캐폴드 + PEI 코팅. 다중 양전하 아민기."
+    },
+    {
+      "candidate_id": "combo_cell_qac",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_qac_cellulose.xyz",
+      "charge": 1,
+      "notes": "셀룰로오스 스캐폴드 + 4차 암모늄 셀룰로오스 유도체 코팅."
+    },
+    {
+      "candidate_id": "combo_cell_cationic_starch",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_cationic_starch.xyz",
+      "charge": 1,
+      "notes": "셀룰로오스 스캐폴드 + 양이온 전분 코팅."
+    },
+    {
+      "candidate_id": "combo_cell_pda",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_dopamine_H.xyz",
+      "charge": 1,
+      "notes": "셀룰로오스 스캐폴드 + 폴리도파민/도파민 유사 카테콜-아민 코팅."
+    },
+    {
+      "candidate_id": "combo_cell_ctrl",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_cellulose_ctrl.xyz",
+      "charge": 0,
+      "notes": "중성 셀룰로오스 대조군 (코팅 없음)."
+    },
+    {
+      "candidate_id": "combo_aromatic_ctrl",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_aromatic_ctrl.xyz",
+      "charge": 0,
+      "notes": "중성 방향족 활성탄 표면 proxy 대조군."
+    }
+  ]
+}

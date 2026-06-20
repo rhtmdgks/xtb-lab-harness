@@ -1,0 +1,32 @@
+{
+  "experiment_objective": "풍화 미세플라스틱 proxy(음이온 카르복실레이트/에스터) 고립 구조의 xTB 기준 에너지·전하·쌍극자 산출",
+  "xtb_settings": {
+    "gfn": 2
+  },
+  "candidates": [
+    {
+      "candidate_id": "mp_pe_carboxylate",
+      "xyz_path": "examples/microplastic-filter/proxies/microplastic/mp_pe_carboxylate.xyz",
+      "charge": -1,
+      "notes": "산화 PE 카르복실레이트 proxy"
+    },
+    {
+      "candidate_id": "mp_pp_carboxylate",
+      "xyz_path": "examples/microplastic-filter/proxies/microplastic/mp_pp_carboxylate.xyz",
+      "charge": -1,
+      "notes": "산화 PP 카르복실레이트 proxy"
+    },
+    {
+      "candidate_id": "mp_ps_carboxylate",
+      "xyz_path": "examples/microplastic-filter/proxies/microplastic/mp_ps_carboxylate.xyz",
+      "charge": -1,
+      "notes": "산화 PS 벤조산염 proxy"
+    },
+    {
+      "candidate_id": "mp_pet_ester",
+      "xyz_path": "examples/microplastic-filter/proxies/microplastic/mp_pet_ester.xyz",
+      "charge": 0,
+      "notes": "PET 유사 에스터/카르복실 proxy"
+    }
+  ]
+}

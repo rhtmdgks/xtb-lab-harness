@@ -65,11 +65,15 @@ Scoring weights match [Research Plan.md](Research%20Plan.md) section 13.
 
 ## Optional Gemini client
 
-MAS narrative enrichment (sections 10–14) on the **client** side:
+MAS narrative enrichment (orchestrator plan, LLM debate, report synthesis):
 
 ```bash
 uv sync --extra llm
-export GEMINI_API_KEY=...
+# .env.local 에 GEMINI_API_KEY 설정
+uv run xtb-lab-check-gemini
+# 또는
+uv run xtb-lab-run --check-gemini
+
 uv run xtb-lab-run -m examples/candidates.json --gemini
 ```
 

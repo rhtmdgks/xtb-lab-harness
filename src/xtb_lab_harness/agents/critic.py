@@ -25,6 +25,13 @@ class CriticAgent:
         if result.calculation_status != CalculationStatus.SUCCESS:
             concerns.append("xTB 계산 결과 없음 — 근거 기반 추천 불가")
             score -= 0.5
+        else:
+            if result.dipole_moment_debye is None:
+                concerns.append("쌍극자 모멘트 미파싱 — 정전기 해석 근거 약화")
+                score -= 0.1
+            if result.charge_summary.max_positive_charge is None:
+                concerns.append("부분전하 미파싱 — 전하 분포 근거 약화")
+                score -= 0.1
 
         numeric_linked = 0
         for review in evaluation.agent_reviews:
