@@ -13,6 +13,7 @@ from xtb_lab_harness.agents.schemas import (
     TaskPlan,
 )
 from xtb_lab_harness.agents.scoring import WEIGHTS
+from xtb_lab_harness.reports.failure_diagnosis import collect_failure_records
 from xtb_lab_harness.reports.labels import (
     calculation_status_ko,
     geometry_optimized_ko,
@@ -20,7 +21,7 @@ from xtb_lab_harness.reports.labels import (
 )
 from xtb_lab_harness.xtb.schemas import CalculationStatus
 
-REPORT_FORMAT_VERSION = "report-harness-v1.2"
+REPORT_FORMAT_VERSION = "report-harness-v1.3"
 FILTRATION_DISCLAIMER = (
     "xTB 결과는 분자 proxy 수준의 상호작용 **경향** 비교용이며, "
     "**실제 필터 여과 효율·포집률을 예측하거나 주장하지 않는다.**"
@@ -170,7 +171,7 @@ def section_6_xtb_results(evaluations: list[CandidateEvaluation]) -> str:
         if r.raw_evidence:
             evidence_lines.append(f"| {r.candidate_id} | `{r.raw_evidence.run_directory}` |")
         elif r.error_message:
-            evidence_lines.append(f"| {r.candidate_id} | _{r.error_message}_ |")
+            evidence_lines.append(f"| {r.candidate_id} | _실패 — §15-1 참조_ |")
     return "\n".join(lines + evidence_lines)
 
 
@@ -292,7 +293,7 @@ def section_12_exclusions(
     parts = ["### 12-1. 완전 제외"]
     if excluded:
         for ev in excluded:
-            parts.append(f"- **{ev.candidate_id}:** {ev.exclusion_reason or '제외'}")
+            parts.append(f"- **{ev.candidate_id}:** §15-1 참조")
     else:
         parts.append("_없음._")
 
@@ -373,7 +374,28 @@ def section_14_variable_control(top: CandidateEvaluation | None, manifest: Exper
     return "\n".join(lines)
 
 
-def section_15_failure_modes() -> str:
+def section_15_1_run_failures(evaluations: list[CandidateEvaluation]) -> str:
+    """Per-candidate failure causes for this run (single source of truth)."""
+    records = collect_failure_records(evaluations)
+    if not records:
+        return "_본 실행에서 기록된 xTB 실패·제외·주의 없음._"
+
+    lines = [
+        "_이번 manifest 실행에서 발생한 실패·주의만 기록. 상세 원인의 단일 출처._",
+        "",
+        "| 후보 ID | 심각도 | 실패 유형 | 원인 | 권장 조치 |",
+        "| --- | --- | --- | --- | --- |",
+    ]
+    for rec in records:
+        lines.append(
+            f"| {rec.candidate_id} | {rec.severity} | {rec.failure_type} | "
+            f"{rec.cause} | {rec.remediation} |"
+        )
+    return "\n".join(lines)
+
+
+def section_15_2_anticipated_failure_modes() -> str:
+    """Experimental execution risks (not harness/xTB run failures)."""
     return "\n".join(
         [
             "- pH·이온강도 변화로 표면 전하·코팅 효과 변동",
@@ -382,6 +404,23 @@ def section_15_failure_modes() -> str:
             "- 동점 후보는 manifest 순서 타이브레이크 — 화학적 우열 아님 (부록 B)",
         ]
     )
+
+
+def section_15_failures(evaluations: list[CandidateEvaluation]) -> str:
+    return "\n".join(
+        [
+            "### 15-1. 본 실행 실패 원인",
+            section_15_1_run_failures(evaluations),
+            "",
+            "### 15-2. 예상 실패 요인 (실험 실행)",
+            section_15_2_anticipated_failure_modes(),
+        ]
+    )
+
+
+def section_15_failure_modes() -> str:
+    """Backward-compatible alias — full §15 body."""
+    return section_15_2_anticipated_failure_modes()
 
 
 def section_16_limitations() -> str:

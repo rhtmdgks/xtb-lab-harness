@@ -1,0 +1,74 @@
+{
+  "experiment_objective": "풍화 미세플라스틱(음이온/극성 표면 proxy) 제거용 필터 후보(산화철 나노입자, 키토산 수용액, 계란 껍질 파우더)를 xTB 분자 proxy 수준 상호작용 경향으로 비교·선별한다. 실제 여과 효율이 아닌 정전기적 보완성·구조 안정성·R&E 구현 가능성을 평가한다.",
+  "xtb_settings": {
+    "gfn": 2
+  },
+  "candidates": [
+    {
+      "candidate_id": "mp_pe_carboxylate",
+      "xyz_path": "examples/microplastic-filter/proxies/microplastic/mp_pe_carboxylate.xyz",
+      "charge": -1,
+      "notes": "풍화 PE 카르복실레이트 proxy (음전하 표면)"
+    },
+    {
+      "candidate_id": "mp_pp_carboxylate",
+      "xyz_path": "examples/microplastic-filter/proxies/microplastic/mp_pp_carboxylate.xyz",
+      "charge": -1,
+      "notes": "풍화 PP 카르복실레이트 proxy (음전하 표면)"
+    },
+    {
+      "candidate_id": "mp_ps_carboxylate",
+      "xyz_path": "examples/microplastic-filter/proxies/microplastic/mp_ps_carboxylate.xyz",
+      "charge": -1,
+      "notes": "풍화 PS 벤조산염 proxy (음전하 표면)"
+    },
+    {
+      "candidate_id": "mp_pet_ester",
+      "xyz_path": "examples/microplastic-filter/proxies/microplastic/mp_pet_ester.xyz",
+      "charge": 0,
+      "notes": "PET 유사 에스터/카르복실 proxy"
+    },
+    {
+      "candidate_id": "filter_chitosan",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_glucosamine_H.xyz",
+      "charge": 1,
+      "notes": "키토산 수용액 proxy — protonated glucosamine 단량체. 양전하 아민기 보유."
+    },
+    {
+      "candidate_id": "filter_iron_oxide",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_iron_oxide_cluster.xyz",
+      "charge": 0,
+      "notes": "산화철 나노입자 proxy — magnetite/maghemite-like Fe-O/Fe-OH cluster"
+    },
+    {
+      "candidate_id": "filter_eggshell_caco3",
+      "xyz_path": "examples/microplastic-filter/proxies/filter/flt_caco3_cluster.xyz",
+      "charge": 0,
+      "notes": "계란 껍질 파우더 proxy — CaCO3 calcite/aragonite-like cluster"
+    },
+    {
+      "candidate_id": "complex_chitosan_mp_pe",
+      "xyz_path": "examples/microplastic-filter/proxies/complex/cpx_chitosan_mp_pe.xyz",
+      "charge": 0,
+      "notes": "키토산 proxy + 풍화 PE proxy 복합체"
+    },
+    {
+      "candidate_id": "complex_fe_chitosan",
+      "xyz_path": "examples/microplastic-filter/proxies/complex/cpx_fe_chitosan.xyz",
+      "charge": 0,
+      "notes": "산화철 + 키토산 조합 proxy"
+    },
+    {
+      "candidate_id": "complex_chitosan_eggshell",
+      "xyz_path": "examples/microplastic-filter/proxies/complex/cpx_chitosan_eggshell.xyz",
+      "charge": 0,
+      "notes": "키토산 + 계란 껍질 파우더 조합 proxy"
+    },
+    {
+      "candidate_id": "complex_fe_chitosan_eggshell",
+      "xyz_path": "examples/microplastic-filter/proxies/complex/cpx_fe_chitosan_eggshell.xyz",
+      "charge": 0,
+      "notes": "산화철 + 키토산 + 계란 껍질 복합 조합 proxy"
+    }
+  ]
+}

@@ -26,7 +26,9 @@ REQUIRED_SECTIONS = [
     "## 12. 제외·감점·추천 제외 사유",
     "## 13. 실험 설계안",
     "## 14. 변인 통제 계획",
-    "## 15. 예상 실패 요인",
+    "## 15. 실패 요인",
+    "### 15-1. 본 실행 실패 원인",
+    "### 15-2. 예상 실패 요인",
     "## 16. 연구의 한계",
     "## 17. 후속 연구",
     "### 부록 B: 점수 가중치 및 랭킹 규칙",
@@ -157,6 +159,44 @@ def test_section_9_uses_cross_refs_not_duplicate_xtb_columns() -> None:
     assert "최종 점수" in s9
 
 
+def test_report_section_12_references_section_15_for_excluded() -> None:
+    manifest = ExperimentManifest(
+        experiment_objective="objective",
+        candidates=[
+            CandidateSpec(candidate_id="missing", xyz_path="missing.xyz"),
+            CandidateSpec(candidate_id="ok", xyz_path="ok.xyz"),
+        ],
+    )
+    evaluations = [
+        CandidateEvaluation(
+            candidate_id="missing",
+            xtb_result=CandidateResult(
+                candidate_id="missing",
+                calculation_status=CalculationStatus.FAILED,
+                error_message="구조 파일 없음: missing.xyz",
+            ),
+            agent_reviews=[],
+            dimension_scores=DimensionScores(),
+            final_score=0.0,
+            excluded=True,
+            exclusion_reason="구조 파일 없음: missing.xyz",
+        ),
+        _evaluation("ok", rank=1, score=0.9),
+    ]
+    report = generate_experiment_report(
+        experiment_objective="objective",
+        hypothesis="hypothesis",
+        manifest=manifest,
+        evaluations=evaluations,
+        evidence_table_markdown="| evidence |",
+    )
+    s12 = report.split("## 13.")[0].split("## 12.")[-1]
+    s15 = report.split("## 16.")[0].split("## 15.")[-1]
+    assert "§15-1 참조" in s12
+    assert "구조 파일 없음" in s15
+    assert "missing" in s15
+
+
 def test_report_uses_korean_table_headers() -> None:
     manifest = ExperimentManifest(
         experiment_objective="objective",
@@ -169,7 +209,7 @@ def test_report_uses_korean_table_headers() -> None:
         evaluations=[_evaluation("a", rank=1, score=0.9)],
         evidence_table_markdown="| evidence |",
     )
-    assert "report-harness-v1.2" in report
+    assert "report-harness-v1.3" in report
     assert "| 후보 ID | 최적화 | E (Eh)" in report
     assert "| 실행 디렉터리 |" in report
     assert "| 후보 ID | 순위 | 정전기 | 구조 |" in report

@@ -1,4 +1,4 @@
-"""Report display labels — docs/report-format.md (report-harness-v1.2)."""
+"""Report display labels — docs/report-format.md (report-harness-v1.3)."""
 
 from __future__ import annotations
 

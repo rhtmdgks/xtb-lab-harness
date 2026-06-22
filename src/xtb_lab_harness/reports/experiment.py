@@ -16,7 +16,7 @@ from xtb_lab_harness.reports.sections import (
     section_12_exclusions,
     section_13_experiment_design,
     section_14_variable_control,
-    section_15_failure_modes,
+    section_15_failures,
     section_16_limitations,
     section_17_follow_up,
     section_3_xtb_scope,
@@ -45,7 +45,7 @@ def generate_experiment_report(
     task_plan: TaskPlan | None = None,
     debates: list[CandidateDebate] | None = None,
 ) -> str:
-    """Build the report-harness-v1.2 experiment design report (docs/report-format.md)."""
+    """Build the report-harness-v1.3 experiment design report (docs/report-format.md)."""
     ranked = sorted_by_rank(evaluations)
     excluded = [e for e in evaluations if e.excluded]
     top, recommend_three = pick_recommendation(ranked, manifest)
@@ -109,8 +109,8 @@ def generate_experiment_report(
             "## 14. 변인 통제 계획",
             section_14_variable_control(top, manifest),
             "",
-            "## 15. 예상 실패 요인",
-            section_15_failure_modes(),
+            "## 15. 실패 요인",
+            section_15_failures(evaluations),
             "",
             "## 16. 연구의 한계",
             section_16_limitations(),
